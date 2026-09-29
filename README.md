@@ -38,11 +38,12 @@ tracklog/
 ## dbt - Duckdb
 ``` bash
 uv init -p 3.14 tracklog-dbt
-cd tracklog-dbt/
 uv add dbt-duckdb
+uv run dbt --version
+uv run dbt init tracklog_dbt
 ``` 
 ```
-tracklog-dbt/
+tracklog_dbt/
 ├── dbt_project.yml          # Configuración global del proyecto
 ├── profiles.yml             # Conexión a la base de datos DuckDB / archivo .db
 ├── models/                  # Aquí viven los modelos SQL (transformaciones)
@@ -55,8 +56,6 @@ tracklog-dbt/
 └── target/                  # Archivos .parquet y base de datos generados
 ```
 ``` bash
-dbt --version
-dbt init tracklog-dbt
 ```
 ``` bash
 # 1. Compilar y ejecutar todos los modelos SQL en DuckDB
