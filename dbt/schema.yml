@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: int_tracklog_clean
+    description: "Dataset de tracklog con elevaciones limpiadas e imputadas"
+    columns:
+      - name: time
+        tests:
+          - not_null # Comprueba que no haya registros sin fecha
+      - name: lat
+        tests:
+          - not_null
+      - name: ele
+        description: "Elevación validada"
+        # Podemos añadir un test personalizado para asegurar que no queden negativos

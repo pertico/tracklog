@@ -1,0 +1,7 @@
+tracklog_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: 'data/tracklog_database.duckdb' # O ':memory:' para ejecución 100% en RAM
+      threads: 4
