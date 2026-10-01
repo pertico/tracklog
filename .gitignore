@@ -12,3 +12,9 @@ wheels/
 
 # Data dir
 data/
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+dbt/.env

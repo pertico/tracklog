@@ -216,3 +216,61 @@ df = (
 
 print(f"Valores negativos restantes: {(df['ele'] < 0).sum()}")
 print(f"Valores nulos de elevación restantes: {df['ele'].is_nan().sum()}")
+
+
+'''
+               ┌──────────────────────────────────────────┐
+               │         ¿El punto es nulo?               │
+               └────────────────────┬─────────────────────┘
+                                    │
+                                    ▼
+       ┌──────────────────────────────────────────────────────────┐
+       │ 1. INTERPOLACIÓN LINEAL                                  │
+       │    (Aplica si tiene vecino anterior Y posterior)         │
+       └────────────────────┬─────────────────────────────────────┘
+                            │
+                            │ Si no se puede (es un extremo)
+                            ▼
+       ┌──────────────────────────────────────────────────────────┐
+       │ 2. EXTRAPOLACIÓN DE BORDE (Backfill / Forwardfill)       │
+       │    - Inicio del track: Toma el primer valor >= 0         │
+       │    - Final del track: Toma el último valor >= 0          │
+       └────────────────────┬─────────────────────────────────────┘
+                            │
+                            │ Si todo el track fuera negativo
+                            ▼
+       ┌──────────────────────────────────────────────────────────┐
+       │ 3. IMPUTACIÓN POR DEM / MDE                              │
+       │    Consulta la altura geográfica real del punto (raster) │
+       └──────────────────────────────────────────────────────────┘
+'''
+
+import polars as pl
+
+def fix_track_elevations(df: pl.DataFrame) -> pl.DataFrame:
+    return (
+        df.with_columns(
+            # 1. Convertir negativos a NULL temporalmente
+            ele_clean = pl.when(pl.col("ele") >= 0).then(pl.col("ele")).otherwise(None)
+        )
+        .with_columns(
+            # 2. Paso A: Interpolación lineal para puntos intermedios
+            # 3. Paso B: Backward Fill (asigna el primer punto válido a los negativos del inicio)
+            # 4. Paso C: Forward Fill (asigna el último punto válido a los negativos del final)
+            ele_fixed = (
+                pl.col("ele_clean")
+                .interpolate()
+                .bfill()
+                .ffill()
+                .round(2)
+            )
+        )
+        .over(["track_fid", "track_seg_id"]) # ¡Crucial! Respetar los límites de cada ruta
+        .with_columns(
+            # Reemplazar solo en los registros donde 'ele' original era negativo
+            ele = pl.when(pl.col("ele") < 0)
+                    .then(pl.col("ele_fixed"))
+                    .otherwise(pl.col("ele"))
+        )
+        .drop(["ele_clean", "ele_fixed"])
+    )
