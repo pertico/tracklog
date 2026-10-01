@@ -35,40 +35,6 @@ tracklog/
 ├── _targets.R               # Script principal del pipeline
 └── run.R                    # Script para ejecutar todo`
 ```
-## dbt - Duckdb
-``` bash
-uv init -p 3.14 tracklog-dbt
-cd tracklog-dbt/
-uv add dbt-duckdb
-``` 
-```
-tracklog-dbt/
-├── dbt_project.yml          # Configuración global del proyecto
-├── profiles.yml             # Conexión a la base de datos DuckDB / archivo .db
-├── models/                  # Aquí viven los modelos SQL (transformaciones)
-│   ├── staging/             # 1. Lectura e ingesta de datos crudos
-│   │   ├── stg_tracklog.sql
-│   │   └── schema.yml       # Documentación y tests de staging
-│   └── intermediate/        # 2. Lógica de negocio / Limpieza e Imputación
-│       ├── int_tracklog_grid_imputed.sql
-│       └── int_tracklog_clean.sql
-└── target/                  # Archivos .parquet y base de datos generados
-```
-``` bash
-dbt --version
-dbt init tracklog-dbt
-```
-``` bash
-# 1. Compilar y ejecutar todos los modelos SQL en DuckDB
-dbt run
-
-# 2. Ejecutar los tests de calidad de datos
-dbt test
-
-# 3. Generar y servir la documentación web con el DAG / Linaje de datos
-dbt docs generate
-dbt docs serve
-``` 
 
 ## kedro
 ```
