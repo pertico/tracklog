@@ -89,17 +89,17 @@ CREATE OR REPLACE VIEW tracklog_processed AS
       
       
 COPY (
-    SELECT 
-        track_id AS "track",  -- GPSBabel identificará esto como el ID/Nombre del track
-        0 AS "trackseg",
-        lat AS "latitude",
-        lon AS "longitude",
-        ele AS "altitude",    -- Altitud en metros
-        -- GPSBabel requiere formato ISO: YYYY-MM-DD HH:MM:SS
-        strftime(time, '%Y-%m-%d %H:%M:%S') AS "time" 
-    FROM tracklog_processed
---    WHERE date_part('year', time) = 2010 -- El año que quieres exportar
-    ORDER BY track_id, time
+        SELECT 
+            track_id AS "track",  -- GPSBabel identificará esto como el ID/Nombre del track
+            0 AS "trackseg",
+            lat AS "latitude",
+            lon AS "longitude",
+            ele AS "altitude",    -- Altitud en metros
+            -- GPSBabel requiere formato ISO: YYYY-MM-DD HH:MM:SS
+            strftime(time, '%Y-%m-%d %H:%M:%S') AS "time" 
+        FROM tracklog_processed
+    --    WHERE date_part('year', time) = 2010 -- El año que quieres exportar
+        ORDER BY track_id, time
 ) TO '../../OneDrive/Documentos/GPS/tracklog.csv' (HEADER TRUE);
 
 -- gpsbabel -t -i unicsv -f trackslog.csv -x track,split,title="%Y%m%d" -o gpx -F tracklog.gpx
