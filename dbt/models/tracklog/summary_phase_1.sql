@@ -15,5 +15,8 @@ SELECT
     -- md5(string_agg(lat::VARCHAR || ',' || lon::VARCHAR, ';' ORDER BY timestamp ASC)) AS track_hash,
     -- Utilizado el campo geometry
     md5(string_agg(geometry::VARCHAR)) AS track_hash,
+    -- Creamos también un hash por hora de inicio y comienzo más el nº de puntos
+    -- El hash por geometría falla por cambios de precisión.
+    md5(start_time || '::' || end_time || '::' || points) AS track_hash_simple
 FROM ordered_data
 GROUP BY track_uid

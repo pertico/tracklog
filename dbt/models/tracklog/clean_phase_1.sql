@@ -4,10 +4,11 @@ WITH source_data AS (
     FROM '../data/tracklog.parquet'
 )
 SELECT 
-    -- Generar UUID determinista v5/MD5 combinando archivo, track y segmento
+    -- Generar UUID determinista v5/MD5 combinando source, source_file, track_name y track_fid
     CAST(
         MD5(COALESCE(source, '') || '::' ||
             COALESCE(source_file, '') || '::' || 
+            COALESCE(track_name, '') || '::' || 
             COALESCE(CAST(track_fid AS VARCHAR), '0')
         ) AS UUID
     ) AS track_uid,
