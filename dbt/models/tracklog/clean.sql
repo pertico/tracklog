@@ -49,9 +49,11 @@ summary AS (
         max(time) AS end_time, 
         count(*) AS points,
         -- Concatena lat y lon formateados, asegurando el orden por el timestamp del GPS
-        md5(string_agg(round(lat,3)::VARCHAR || '::' || round(lon,3)::VARCHAR, ';' ORDER BY time ASC)) AS content_digest,
+        -- md5(string_agg(round(lat,5)::VARCHAR || '::' || round(lon,5)::VARCHAR, ';' ORDER BY time ASC)) AS content_digest,
+        -- Utilizando únicamente el timestamp
+        md5(string_agg(time::VARCHAR, ';' ORDER BY time ASC)) AS content_digest,
         -- Utilizado el campo geometry
-        -- md5(string_agg(geometry::VARCHAR)) AS track_hash,
+        -- md5(string_agg(geometry::VARCHAR, ';' ORDER BY time ASC)) AS track_hash,
         -- Creamos también un hash por hora de inicio y comienzo más el nº de puntos
         -- El hash por geometría falla por cambios de precisión.
         md5(start_time || '::' || end_time || '::' || points) AS summary_digest
