@@ -2,7 +2,10 @@
     post_hook=["
         DELETE FROM {{ ref('clean')}}
         WHERE track_uid in ( 
-            SELECT track_uid FROM {{ this }} WHERE is_subtrack
+            SELECT track_uid 
+            FROM {{ this }} 
+            WHERE is_subtrack
+                OR points < 3
         )
     "]
 )
