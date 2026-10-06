@@ -1,18 +1,3 @@
-{{ config (
-    post_hook=["
-        CREATE OR REPLACE VIEW summary AS
-            SELECT 
-                track_uid,
-                min(time) AS start_time, 
-                max(time) AS end_time, 
-                count(*) AS points,
-                max(time)-min(time) AS duration,
-                SUM(distance_delta)/1000 AS distance_km,
-                3.6 * SUM(distance_delta)/(epoch(max(time))-epoch(min(time))) AS avg_speed_kmh
-            FROM '03_split'
-            GROUP BY track_uid
-        "]
-)}}
 
 with split_marks AS (
   SELECT 
