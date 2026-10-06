@@ -7,7 +7,7 @@
                 summary_digest,
                 min(time) AS start_time, 
                 max(time) AS end_time, 
-                count(*) AS points,
+                count(*) AS points
             FROM {{ this }}
             GROUP BY track_uid, content_digest, summary_digest
         "]

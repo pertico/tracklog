@@ -1,11 +1,11 @@
 {{ config (
     post_hook=["
-        DELETE FROM {{ ref('clean')}}
+        DELETE FROM {{ ref('01_clean')}}
         WHERE track_uid in ( 
             SELECT track_uid 
             FROM {{ this }} 
             WHERE is_subtrack
-                OR points < 3
+            --    OR points < 3
         )
     "]
 )
@@ -13,7 +13,7 @@
 }}
 -- Detectar qué tracks están totalmente contenidos dentro de un track de mayor duración
 with flag as (
-    select 1 from {{ ref('clean')}} limit 1
+    select 1 from {{ ref('01_clean')}} limit 1
 ),
 summary_2 AS (
 	select *, end_time - start_time as duration
