@@ -27,18 +27,7 @@ source_data AS (
             COALESCE(CAST(track_fid AS VARCHAR), '0')
         ) AS UUID
     ) AS track_uid,
-    source,
-    track_name,
-    track_type,
-    track_fid,
-    track_seg_id,
-    track_seg_point_id,
-    time,
-    lat,
-    lon,
-    ele,
-    source_file,
-    geometry
+    * EXCLUDE (geometry)
 FROM parquet_file 
 WHERE time IS NOT NULL
 ),
@@ -81,8 +70,7 @@ SELECT
     t.lat,
     t.lon,
     t.ele,
-    t.source_file,
-    t.geometry
+    t.source_file
 FROM 
     source_data t
     INNER JOIN summary s USING (track_uid)
