@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s',
     stream=sys.stdout  # <--- Esto asegura la salida estándar
 )
@@ -76,12 +76,14 @@ def haversine(lat1, lon1, lat2, lon2):
 
 def cleaning_pandas(tracklog: pd.DataFrame) -> pd.DataFrame:
 
+    logging.debug(f"Processing { len(tracklog)} points...")
     # Eliminamos registros con timestamp nulo
     logging.info('Remove null timestamps...')
     tracklog['time'] = pd.to_datetime(tracklog['time'], errors='coerce')
     # tracklog = tracklog.dropna(subset=['timestamp'])
     # tracklog = tracklog[tracklog['timestamp'].notna()]
     tracklog.dropna(subset=['time'], inplace=True)
+    logging.debug(f"{len(tracklog)} points remaining...")
 
     # Ordenar y eliminar timestamps duplicados
     # logging.info('Sort and remove duplicated timestamps...')
@@ -102,6 +104,7 @@ def cleaning_pandas(tracklog: pd.DataFrame) -> pd.DataFrame:
     '''
     tracklog['track_uid'] = [str(uuid.uuid5(NAMESPACE_BASE, val)) for val in tracklog['source'].astype(str) + "::" + tracklog['source_file'].astype(str) + "::" + tracklog['track_fid'].astype(str)]
     tracklog.sort_values(by=['track_uid', 'time'], inplace=True)
+    logging.debug(f"{tracklog['track_uid'].nunique()} tracks.")
 
     # Calculamos deltas
     logging.info(f"Calculate deltas...")
@@ -135,7 +138,7 @@ def cleaning_pandas(tracklog: pd.DataFrame) -> pd.DataFrame:
 
     # 3. Limpiar también 'summary' para que quede alineado con 'tracklog'
     summary = summary_sin_duplicados.reset_index(drop=True)
-
+    logging.debug(f"{ len(summary) } tracks remaining.")
 
     logging.info("Remove subtracks...")
     # 1. Realizar un merge cruzado (o cartesiano) de summary consigo mismo
@@ -170,7 +173,8 @@ def cleaning_pandas(tracklog: pd.DataFrame) -> pd.DataFrame:
     summary = summary[~summary['track_uid'].isin(subtrack_uids)].reset_index(drop=True)
     tracklog = tracklog[tracklog['track_uid'].isin(summary['track_uid'])].reset_index(drop=True)
 
-    logging.info(f"{len(subtrack_uids)} subtracks removed.")
+    logging.debug(f"{len(tracklog)} points remaining.")
+    logging.debug(f"{len(summary)} tracks remaining.")
 
     # Calculo de distintas estadíticas de los tracks
     logging.info(f"Calculate track statistics")
