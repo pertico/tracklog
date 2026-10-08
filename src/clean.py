@@ -4,8 +4,6 @@ import uuid
 import hashlib
 import numpy as np
 import pandas as pd
-import polars as pl
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -251,18 +249,6 @@ def cleaning_pandas(tracklog: pd.DataFrame) -> pd.DataFrame:
    
     return tracklog
 
-def cleaning_polars(df:pl.DataFrame) -> pl.DataFrame:
-
-    df = (
-        pl.scan_parquet("data/tracklog.parquet")
-        .sort("time")                               # Ordenar por timestamp
-        .unique(subset=["time"], keep="first")      # Eliminar timestamp duplicados
-    )
-
-
-logging.info(f"Start Pandas cleaning...")
+logging.info(f"Start cleaning...")
 cleaning_pandas(pd.read_parquet("./data/tracklog.parquet"))
-logging.info(f"Finished Pandas cleaning...")
-
-# logging.info(f"Start Polars cleaning...")
-# cleaning_polars(pl.scan_parquet("data/tracklog.parquet"))
+logging.info(f"Finished cleaning...")
