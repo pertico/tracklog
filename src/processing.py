@@ -1,31 +1,6 @@
-import uuid
-import numpy as np
 import pandas as pd
 
-
-def processing(df: pd.DataFrame) -> pd.DataFrame:
-
-    # Generamos un uuid para cada track
-    NAMESPACE_BASE = uuid.uuid5(uuid.NAMESPACE_DNS, 'tracklog')
-
-    '''
-    Esta opción con apply (fila por fila) es más lenta.
-    df['track_uid'] = df.apply(
-        lambda row: str(uuid.uuid5(
-            NAMESPACE_BASE, 
-            f"{row['source']}::{row['source_file']}::{row['track_fid']}"
-        )), 
-        axis=1
-    )    
-    '''
-
-    df['track_uid'] = [str(uuid.uuid5(NAMESPACE_BASE, val)) for val in df['source'].astype(str) + "::" + df['source_file'].astype(str) + "::" + df['track_fid'].astype(str)]
-
-    # Eliminamos filas con timestamp nulo
-    df['time'] = pd.to_datetime(df['time'], errors='coerce')
-    # df = df.dropna(subset=['timestamp'])
-    # df = df[df['timestamp'].notna()]
-    df.dropna(subset=['time'], inplace=True)
+def processing_pandas(df: pd.DataFrame) -> pd.DataFrame:
 
     # Anulamos valores de altura negativos y superiores a 4000
     # Si la condición se cumple, se reemplaza por NaN; si no, conserva su valor
@@ -99,6 +74,3 @@ def processing(df: pd.DataFrame) -> pd.DataFrame:
         lambda group: group.interpolate(method='linear', fill_value='extrapolate')
     )
     '''
-    return df
-
-processing(pd.read_parquet("../data/tracklog.parquet"))
