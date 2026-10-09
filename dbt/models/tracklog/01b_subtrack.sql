@@ -1,21 +1,7 @@
-{{ config (
-    post_hook=["
-        DELETE FROM {{ ref('01_clean')}}
-        WHERE track_uid in ( 
-            SELECT track_uid 
-            FROM {{ this }} 
-            WHERE is_subtrack
-            --    OR points < 3
-        )
-    "]
-)
-}}
+-- 02_subtrack.sql
 
 -- Detectar qué tracks están totalmente contenidos dentro de un track de mayor duración
-with flag as (
-    select 1 from {{ ref('01_clean')}} limit 1
-),
-summary as (
+with summary as (
     SELECT 
         track_uid,
         min(time) AS start_time, 
@@ -48,13 +34,13 @@ subtrack_matches as (
            --   and parent.track_uid > child.track_uid
            -- )
         )        
+), subtracks as (
+    select
+        distinct m.subtrack_uid as track_uid
+    from summary as s
+    left join subtrack_matches as m
+        on s.track_uid = m.subtrack_uid
+    where m.subtrack_uid is not null
 )
-select
-    distinct s.*,
-    case 
-        when m.subtrack_uid is not null then true 
-        else false 
-    end as is_subtrack
-from summary as s
-left join subtrack_matches as m
-    on s.track_uid = m.subtrack_uid
+select * from {{ ref('01_clean')}}
+where track_uid not in (select distinct track_uid from subtracks)
