@@ -9,6 +9,15 @@
     "]
 )}}
 
+WITH summary AS (
+    SELECT 
+        track_uid,
+        min(time) AS start_time, 
+        max(time) AS end_time, 
+        count(1) AS points
+    FROM {{ ref('04_delta') }}
+    GROUP BY track_uid    
+)
 select
     s.*,
     -- Genera un LINESTRING ordenado por tiempo para cada track
@@ -23,5 +32,5 @@ left join (
     from {{ ref('04_delta') }}
     group by track_uid
     having count(1) > 1
-) as g on s.track_uid = g.track_uid
+) as g on s.track_uid::VARCHAR = g.track_uid
 where s.points > 1

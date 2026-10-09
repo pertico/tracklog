@@ -18,23 +18,7 @@ WITH delta AS (
         ST_Distance_Spheroid(p1, p2) AS distance_delta
 FROM {{ ref('01_clean') }}
 )
-SELECT 
-  track_uid, 
-  content_digest, 
-  summary_digest, 
-  source,
-  track_name,
-  track_type,
-  track_fid,
-  track_seg_id,
-  track_seg_point_id,
-  time,
-  lat,
-  lon,
-  ele,
-  source_file,
-  time_delta,
-  distance_delta
+SELECT *
 FROM delta
 WHERE epoch(time_delta) > 0 OR time_delta IS NULL
 

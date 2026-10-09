@@ -1,20 +1,8 @@
-{{ config (
-    post_hook=["
-        CREATE OR REPLACE VIEW summary AS
-            SELECT 
-                track_uid,
-                content_digest,
-                summary_digest,
-                min(time) AS start_time, 
-                max(time) AS end_time, 
-                count(*) AS points
-            FROM {{ this }}
-            GROUP BY track_uid, content_digest, summary_digest
-        "]
-)}}
+-- 01_clean.sql
+
 WITH parquet_file AS (
     -- Lectura directa del Parquet original generado por el script de Python
-    SELECT * 
+    SELECT * EXCLUDE(geometry)
     FROM '../data/tracklog.parquet'
 ),
 source_data AS (
@@ -27,7 +15,7 @@ source_data AS (
             COALESCE(CAST(track_fid AS VARCHAR), '0')
         ) AS UUID
     ) AS track_uid,
-    * EXCLUDE (geometry)
+    *
 FROM parquet_file 
 WHERE time IS NOT NULL
 ),
@@ -57,21 +45,8 @@ unique_tracks AS (
     GROUP BY content_digest
 )
 SELECT 
-    t.track_uid,
-    s.content_digest,
-    s.summary_digest,
-    t.source,
-    t.track_name,
-    t.track_type,
-    t.track_fid,
-    t.track_seg_id,
-    t.track_seg_point_id,
-    t.time,
-    t.lat,
-    t.lon,
-    t.ele,
-    t.source_file
+    t.*
 FROM 
     source_data t
-    INNER JOIN summary s USING (track_uid)
-    INNER JOIN unique_tracks u USING (track_uid)
+    JOIN summary s USING (track_uid)
+    JOIN unique_tracks u USING (track_uid)

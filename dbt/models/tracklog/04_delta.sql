@@ -2,20 +2,7 @@
     pre_hook=["
         INSTALL spatial;
         LOAD spatial;
-    "],
-    post_hook=["
-        CREATE OR REPLACE VIEW summary AS
-            SELECT 
-                track_uid,
-                min(time) AS start_time, 
-                max(time) AS end_time, 
-                count(*) AS points,
-                max(time)-min(time) AS duration,
-                SUM(distance_delta)/1000 AS distance_km,
-                3.6 * SUM(distance_delta)/(epoch(max(time))-epoch(min(time))) AS avg_speed_kmh
-            FROM {{ this }}
-            GROUP BY track_uid
-        "]
+    "]
 )}}
 
 WITH new_deltas AS (
@@ -31,23 +18,7 @@ WITH new_deltas AS (
         ST_Distance_Spheroid(p1, p2) AS distance_delta
 FROM {{ ref('03_split') }}
 )
-SELECT 
-  track_uid, 
-  content_digest, 
-  summary_digest, 
-  source,
-  track_name,
-  track_type,
-  track_fid,
-  track_seg_id,
-  track_seg_point_id,
-  time,
-  lat,
-  lon,
-  ele,
-  source_file,
-  time_delta,
-  distance_delta
+SELECT *
 FROM new_deltas
 WHERE epoch(time_delta) > 0 OR time_delta IS NULL
 
