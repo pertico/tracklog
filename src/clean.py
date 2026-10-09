@@ -149,6 +149,7 @@ def cleaning_pandas(tracklog: pd.DataFrame) -> pd.DataFrame:
         suffixes=('_child', '_parent')
     )
 
+    '''
     # 2. Excluir la autocomparación (un track no es subtrack de sí mismo)
     cross_summary = cross_summary[
         cross_summary['track_uid_child'] != cross_summary['track_uid_parent']
@@ -160,12 +161,34 @@ def cleaning_pandas(tracklog: pd.DataFrame) -> pd.DataFrame:
         (cross_summary['start_time_child'] >= cross_summary['start_time_parent']) &
         (cross_summary['end_time_child'] <= cross_summary['end_time_parent'])
     )
-
-    subtracks_detected = cross_summary[is_subtrack_condition]
+    '''
+    
+    # 2. Condición con resolución de empates (evita eliminar ambos si duran lo mismo)
+    is_subtrack_condition = (
+        (cross_summary['track_uid_child'] != cross_summary['track_uid_parent']) &
+        (cross_summary['start_time_child'] >= cross_summary['start_time_parent']) &
+        (cross_summary['end_time_child'] <= cross_summary['end_time_parent']) &
+        (
+            # 1. El padre dura más
+            (cross_summary['duration_m_parent'] > cross_summary['duration_m_child']) |
+            (
+                # 2. Misma duración, pero el padre tiene más puntos
+                (cross_summary['duration_m_parent'] == cross_summary['duration_m_child']) & 
+                (cross_summary['points_parent'] > cross_summary['points_child'])
+            ) |
+            (
+                # 3. Misma duración y mismos puntos: desempate por UID
+                (cross_summary['duration_m_parent'] == cross_summary['duration_m_child']) & 
+                (cross_summary['points_parent'] == cross_summary['points_child']) &
+                (cross_summary['track_uid_parent'] > cross_summary['track_uid_child'])
+            )
+        )
+    )
 
     # 4. Obtener la lista única de 'track_uid' que son subtracks de algún otro track
-    subtrack_uids = subtracks_detected['track_uid_child'].unique()
-
+    subtrack_uids = cross_summary.loc[is_subtrack_condition, 'track_uid_child'].unique()
+    logging.debug(f"{ len(subtrack_uids) } subtracks detected.")
+    
     # A. Marcar en summary qué tracks son subtracks y de qué track dependen
     # summary['is_subtrack'] = summary['track_uid'].isin(subtrack_uids)
 
