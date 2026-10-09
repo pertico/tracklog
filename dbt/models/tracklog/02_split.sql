@@ -25,6 +25,9 @@ with deltas as (
       ELSE false
     END AS split
     FROM deltas
+    WHERE
+        time_delta IS NULL
+        OR epoch(time_delta) > 0
 ),
 segmented as (
     select

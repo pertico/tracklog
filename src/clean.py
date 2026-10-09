@@ -109,6 +109,8 @@ def cleaning_pandas(tracklog: pd.DataFrame) -> pd.DataFrame:
     # Calculamos deltas
     logging.info(f"Calculate deltas...")
     tracklog['time_delta'] = tracklog.groupby('track_uid')['time'].diff()
+    # Eliminar puntos con time_delta igual a 0 (manteniendo los NAs que corresponden al primer punto de cada track)
+    tracklog = tracklog[tracklog['time_delta'].isna() | (tracklog['time_delta'].dt.total_seconds() > 0)].reset_index(drop=True)
 
     # 1. Obtener la latitud y longitud del punto anterior por cada track_uid
     tracklog['prev_lat'] = tracklog.groupby('track_uid')['lat'].shift(1)
@@ -135,6 +137,7 @@ def cleaning_pandas(tracklog: pd.DataFrame) -> pd.DataFrame:
 
     # 2. Filtrar 'tracklog' manteniendo solo los track_uid válidos
     tracklog = tracklog[tracklog['track_uid'].isin(summary_sin_duplicados['track_uid'])]
+    logging.debug(f"{ len(tracklog)} points remaining.")
 
     # 3. Limpiar también 'summary' para que quede alineado con 'tracklog'
     summary = summary_sin_duplicados.reset_index(drop=True)
